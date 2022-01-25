@@ -14,6 +14,7 @@ import styled from "styled-components";
 import { Colors } from "constants/Colors";
 import { DropdownOption } from "components/constants";
 import Icon, { IconSize } from "components/ads/Icon";
+import { replayHighlightClass } from "globalStyles/portals";
 
 export type TreeDropdownOption = DropdownOption & {
   onSelect?: (value: TreeDropdownOption, setter?: Setter) => void;
@@ -71,15 +72,22 @@ const StyledMenu = styled(Menu)`
       fill: #9f9f9f;
     }
 
-    &.t--apiFormDeleteBtn,
-    &.t--apiFormDeleteBtn:hover {
+    &.t--apiFormDeleteBtn {
       color: ${Colors.DANGER_SOLID};
       .${Classes.ICON} svg {
         fill: ${Colors.DANGER_SOLID};
       }
     }
 
-    &:hover {
+    &.t--apiFormDeleteBtn:hover {
+      background-color: ${Colors.GREY_3};
+      color: ${Colors.DANGER_SOLID};
+      .${Classes.ICON} svg {
+        fill: ${Colors.DANGER_SOLID};
+      }
+    }
+
+    &:hover:not(.t--apiFormDeleteBtn) {
       background-color: ${Colors.GREY_3};
       color: ${Colors.GREY_10};
       .${Classes.ICON} > svg:not([fill]) {
@@ -115,6 +123,11 @@ const DropdownTarget = styled.div`
     display: flex;
     justify-content: space-between;
     padding: 5px 12px;
+
+    &:active,
+    &:focus {
+      border-color: var(--appsmith-input-focus-border-color);
+    }
   }
   &&&& .${Classes.ICON} {
     color: ${(props) => props.theme.colors.treeDropdown.menuText.normal};
@@ -215,7 +228,9 @@ export default function TreeDropdown(props: TreeDropdownProps) {
     <DropdownTarget>
       <Button
         className={`t--open-dropdown-${defaultText.split(" ").join("-")} ${
-          selectedLabelModifier ? "code-highlight" : ""
+          selectedLabelModifier
+            ? "code-highlight " + replayHighlightClass
+            : replayHighlightClass
         }`}
         rightIcon={<Icon name="downArrow" size={IconSize.XXL} />}
         text={

@@ -2,8 +2,6 @@ import { createActionRequest } from "actions/pluginActionActions";
 import { createModalAction } from "actions/widgetActions";
 import { TreeDropdownOption } from "components/ads/TreeDropdown";
 import TreeStructure from "components/utils/TreeStructure";
-import { OnboardingStep } from "constants/OnboardingConstants";
-import { ReduxActionTypes } from "constants/ReduxActionConstants";
 import {
   INTEGRATION_EDITOR_MODES,
   INTEGRATION_EDITOR_URL,
@@ -21,7 +19,6 @@ import {
 import React, { useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "reducers";
-import { getCurrentStep, getCurrentSubStep } from "sagas/OnboardingSagas";
 import { getWidgetOptionsTree } from "sagas/selectors";
 import {
   getCurrentApplicationId,
@@ -60,19 +57,22 @@ import {
   DOWNLOAD,
   EXECUTE_A_QUERY,
   EXECUTE_JS_FUNCTION,
+  GET_GEO_LOCATION,
   NAVIGATE_TO,
   NO_ACTION,
   OPEN_MODAL,
   RESET_WIDGET,
   SET_INTERVAL,
   SHOW_MESSAGE,
+  STOP_WATCH_GEO_LOCATION,
   STORE_VALUE,
+  WATCH_GEO_LOCATION,
 } from "constants/messages";
 
 /* eslint-disable @typescript-eslint/ban-types */
 /* TODO: Function and object types need to be updated to enable the lint rule */
 const isJSEditorEnabled = getFeatureFlags().JS_EDITOR;
-const baseOptions: any = [
+const baseOptions: { label: string; value: string }[] = [
   {
     label: createMessage(NO_ACTION),
     value: ActionType.none,
@@ -120,6 +120,18 @@ const baseOptions: any = [
   {
     label: createMessage(CLEAR_INTERVAL),
     value: ActionType.clearInterval,
+  },
+  {
+    label: createMessage(GET_GEO_LOCATION),
+    value: ActionType.getGeolocation,
+  },
+  {
+    label: createMessage(WATCH_GEO_LOCATION),
+    value: ActionType.watchGeolocation,
+  },
+  {
+    label: createMessage(STOP_WATCH_GEO_LOCATION),
+    value: ActionType.stopWatchGeolocation,
   },
 ];
 
@@ -361,6 +373,12 @@ function getFieldFromValue(
       field: FieldType.CLEAR_INTERVAL_ID_FIELD,
     });
   }
+
+  if (value.indexOf("getCurrentPosition") !== -1) {
+    fields.push({
+      field: FieldType.CALLBACK_FUNCTION_FIELD,
+    });
+  }
   return fields;
 }
 
@@ -554,9 +572,6 @@ function useIntegrationsOptionTree() {
   });
   const pluginGroups: any = useMemo(() => keyBy(plugins, "id"), [plugins]);
   const actions = useSelector(getActionsForCurrentPage);
-  // For onboarding
-  const currentStep = useSelector(getCurrentStep);
-  const currentSubStep = useSelector(getCurrentSubStep);
   const jsActions = useSelector(getJSCollectionsForCurrentPage);
 
   return getIntegrationOptionsWithChildren(
@@ -574,23 +589,14 @@ function useIntegrationsOptionTree() {
       icon: "plus",
       className: "t--create-datasources-query-btn",
       onSelect: () => {
-        // For onboarding
-        if (currentStep === OnboardingStep.ADD_INPUT_WIDGET) {
-          if (currentSubStep === 2) {
-            dispatch({
-              type: ReduxActionTypes.ONBOARDING_ADD_ONSUBMIT_BINDING,
-            });
-          }
-        } else {
-          history.push(
-            INTEGRATION_EDITOR_URL(
-              applicationId,
-              pageId,
-              INTEGRATION_TABS.NEW,
-              INTEGRATION_EDITOR_MODES.AUTO,
-            ),
-          );
-        }
+        history.push(
+          INTEGRATION_EDITOR_URL(
+            applicationId,
+            pageId,
+            INTEGRATION_TABS.NEW,
+            INTEGRATION_EDITOR_MODES.AUTO,
+          ),
+        );
       },
     },
     dispatch,
