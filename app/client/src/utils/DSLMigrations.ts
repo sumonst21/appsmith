@@ -46,6 +46,7 @@ import { migrateMapWidgetIsClickedMarkerCentered } from "./migrations/MapWidget"
 import { DSLWidget } from "widgets/constants";
 import { migrateRecaptchaType } from "./migrations/ButtonWidgetMigrations";
 import { PrivateWidgets } from "entities/DataTree/dataTreeFactory";
+import { migratePhoneInputWidgetAllowFormatting } from "./migrations/PhoneInputWidgetMigrations";
 
 /**
  * adds logBlackList key for all list widget children
@@ -1040,6 +1041,11 @@ export const transformDSL = (
 
   if (currentDSL.version === 50) {
     currentDSL = migrateTableWidgetNumericColumnName(currentDSL);
+    currentDSL.version = 51;
+  }
+
+  if (currentDSL.version === 51) {
+    currentDSL = migratePhoneInputWidgetAllowFormatting(currentDSL);
     currentDSL.version = LATEST_PAGE_VERSION;
   }
 
